@@ -602,8 +602,12 @@ func (c *Chip) SampleChannels(out *[Channels]int) {
 
 // Resampler plays a chip at another sample rate, interpolating between its samples.
 type Resampler struct {
-	Chip       *Chip
+	Chip *Chip
+	// Mix, if set, makes each of the chip's samples from its channels' outputs (to weigh
+	// them, say) in place of Sample's plain sum.
+	Mix        func(ch *[Channels]int) int
 	rate, frac int
+	ch         [Channels]int
 	prev, cur  int
 }
 
@@ -616,7 +620,13 @@ func NewResampler(chip *Chip, rate int) *Resampler {
 func (r *Resampler) Next() int {
 	for r.frac >= r.rate {
 		r.frac -= r.rate
-		r.prev, r.cur = r.cur, r.Chip.Sample()
+		r.prev = r.cur
+		if r.Mix != nil {
+			r.Chip.SampleChannels(&r.ch)
+			r.cur = r.Mix(&r.ch)
+		} else {
+			r.cur = r.Chip.Sample()
+		}
 	}
 	v := (r.prev*(r.rate-r.frac) + r.cur*r.frac) / r.rate
 	r.frac += Rate

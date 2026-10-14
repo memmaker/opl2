@@ -210,3 +210,26 @@ func TestReg(t *testing.T) {
 		t.Error("Reg does not read back a pending write")
 	}
 }
+
+func TestResamplerMix(t *testing.T) {
+	a, b := New(), New()
+	for _, c := range []*Chip{a, b} {
+		for ch := range 2 {
+			sineVoice(c, ch)
+			keyOn(c, ch, 400+100*ch, 4)
+		}
+	}
+	plain := NewResampler(a, 44100)
+	mixed := NewResampler(b, 44100)
+	mixed.Mix = func(ch *[Channels]int) int { return ch[0] } // channel 1 muted
+	only0 := 0
+	for range 4410 {
+		p, m := plain.Next(), mixed.Next()
+		if p != m {
+			only0++
+		}
+	}
+	if only0 < 1000 {
+		t.Errorf("muting a channel changed only %d of 4410 samples", only0)
+	}
+}
