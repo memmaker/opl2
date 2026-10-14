@@ -41,7 +41,6 @@ negation, so a quiet chip has a tiny DC offset.
 
 ## Versions
 
-v0.1.0 is the core as it came out of the ports. The working tree adds
-`Resampler.Mix`, which Might and Magic III uses to put its music and its
-effects on separate volume faders; until that is tagged, mm3-go builds
-against this directory through `replace github.com/memmaker/opl2 => ../opl2`.
+- v0.1.0: the core as it came out of the ports.
+- v0.2.0: adds `Resampler.Mix`, which Might and Magic III uses to put its
+  music and its effects on separate volume faders.
